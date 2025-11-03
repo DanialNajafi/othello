@@ -231,3 +231,59 @@ export class Board {
     throw RangeError(`illegal player ${player}`);
   }
 }
+// In board.js innerhalb der Klasse Board:
+
+isValidMove(player, row, col) {
+  // Spieler pruefen
+  if (player !== 1 && player !== 2) return false;
+
+  // Koordinaten pruefen
+  if (!Number.isInteger(row) || !Number.isInteger(col)) return false;
+  if (row < 0 || row > 7 || col < 0 || col > 7) return false;
+
+  // Feld muss leer sein
+  if (this.fields[row][col] !== 0) return false;
+
+  const opponent = player === 1 ? 2 : 1;
+
+  // Alle 8 Richtungen
+  const dirs = [
+    [-1, -1], [-1, 0], [-1, 1],
+    [ 0, -1],          [ 0, 1],
+    [ 1, -1], [ 1, 0], [ 1, 1],
+  ];
+
+  // Hilfsfunktion: innerhalb des Bretts?
+  const onBoard = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+
+  // In mind. einer Richtung einklammern?
+  for (const [dr, dc] of dirs) {
+    let r = row + dr;
+    let c = col + dc;
+
+    // Der erste Nachbar muss Gegner sein
+    if (!onBoard(r, c) || this.fields[r][c] !== opponent) continue;
+
+    // Danach so lange gehen, bis wir auf eigenen Stein oder Ende treffen
+    r += dr;
+    c += dc;
+
+    while (onBoard(r, c)) {
+      const v = this.fields[r][c];
+      if (v === 0) {
+        // Leere Zelle -> keine Einklammerung in dieser Richtung
+        break;
+      }
+      if (v === player) {
+        // Mind. ein Gegner zuvor und jetzt eigener Stein -> gueltig
+        return true;
+      }
+      // sonst weiter ueber Gegnersteine
+      r += dr;
+      c += dc;
+    }
+  }
+
+  return false;
+}
+
